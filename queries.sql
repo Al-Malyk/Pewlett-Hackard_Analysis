@@ -73,3 +73,79 @@ LEFT JOIN dept_emp as de
 ON ce.emp_no = de.emp_no
 GROUP BY de.dept_no
 ORDER BY de.dept_no
+
+SELECT * FROM current_emp
+
+-- create a table of current but retiring employees with their salaries
+SELECT e.emp_no,
+	e.first_name,
+	e.last_name,
+	e.gender,
+	s.salary,
+	de.to_date
+INTO emp_info
+FROM employees AS e
+INNER JOIN salaries AS s
+ON e.emp_no = s.emp_no
+INNER JOIN dept_emp AS de
+ON e.emp_no = de.emp_no
+WHERE (e.birth_date BETWEEN '1952-01-01' AND '1955-12-31')
+AND (e.hire_date BETWEEN '1985-01-01' AND '1988-12-31')
+AND de.to_date = ('9999-01-01');
+
+SELECT * FROM dept_manager
+
+-- department managers and all the below info
+SELECT dm.dept_no,
+	dm.emp_no,
+	dm.from_date,
+	dm.to_date,
+	d.dept_name,
+	ce.first_name,
+	ce.last_name
+INTO manager_info
+FROM dept_manager AS dm
+INNER JOIN current_emp AS ce
+ON dm.emp_no = ce.emp_no
+INNER JOIN departments AS d 
+ON dm.dept_no = d.dept_no;
+
+-- deparment retirees. update the current_emp table by adding department names
+-- there isn't a common column between ce and d so use dept_emp to bridge that gap
+SELECT ce.emp_no,
+ce.first_name,
+ce.last_name,
+d.dept_name
+-- INTO dept_info
+FROM current_emp as ce
+INNER JOIN dept_emp AS de
+ON (ce.emp_no = de.emp_no)
+INNER JOIN departments AS d
+ON (de.dept_no = d.dept_no);
+
+-- SALES TEAM TABLE OF RETIREES
+SELECT ri.emp_no,
+	ri.first_name,
+	ri.last_name,
+	d.dept_name
+--INTO retire_sales
+FROM retirement_info AS ri
+INNER JOIN dept_emp AS de
+ON ri.emp_no = de.emp_no
+INNER JOIN departments AS d
+ON de.dept_no = d.dept_no
+WHERE d.dept_name = ('Sales');
+
+--FOR BOTH SALES AND DEVELOPMENT TEAMS LIKE THAT DOUCHEBAG REQUESTED
+-- easier way to think of (WHERE IN) below is. where x in tuple (y)
+SELECT ri.emp_no,
+	ri.first_name,
+	ri.last_name,
+	d.dept_name
+INTO mentorship_program
+FROM retirement_info AS ri
+INNER JOIN dept_emp AS de
+ON ri.emp_no = de.emp_no
+INNER JOIN departments AS d
+ON de.dept_no = d.dept_no
+WHERE d.dept_name IN ('Sales' , 'Development')
